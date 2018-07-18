@@ -9,6 +9,8 @@ LABEL \
 RUN apt-get update && apt-get install -y \
   unzip \
   vim \
+  python \
+  python-pip \
   && apt-get purge
 
 WORKDIR /usr/local
@@ -41,6 +43,14 @@ ENV \
 
 COPY Makefile.posix /usr/share/nRF5-SDK/nRF5_SDK_15.0.0_a53641a/components/toolchain/gcc/Makefile.posix
 
+# Include nrfutil
+RUN pip install nrfutil
+
+# Include the Nordic Command Line Tools
+# https://www.nordicsemi.com/eng/Products/Bluetooth-low-energy/nRF52832/nRF5x-Command-Line-Tools-Linux64
+WORKDIR /usr/local/nRF5x
+RUN wget -qO- https://www.nordicsemi.com/eng/nordic/download_resource/51388/29/43703846/94917 | tar -xf -
+
+ENV PATH="${PATH}:/usr/local/nRF5x/nrfjprog:/usr/local/nRF5x/mergehex"
+
 WORKDIR /build
-
-
