@@ -9,27 +9,19 @@ LABEL \
 RUN apt-get update && apt-get install -y \
   unzip \
   vim \
-<<<<<<< HEAD
   python2.7 \
+  emacs \
+  dos2unix \
   && apt-get purge
 
 WORKDIR /usr/local
 RUN wget https://bootstrap.pypa.io/get-pip.py && python2.7 get-pip.py
 RUN wget -qO- https://developer.arm.com/-/media/Files/downloads/gnu-rm/6-2017q2/gcc-arm-none-eabi-6-2017-q2-update-linux.tar.bz2 | tar -xjf -
-=======
-  emacs \
-  python \
-  python-pip \
-  && apt-get purge
-
-WORKDIR /usr/local
-RUN wget -qO- https://developer.arm.com/-/media/Files/downloads/gnu-rm/7-2018q2/gcc-arm-none-eabi-7-2018-q2-update-linux.tar.bz2 | tar -xjf -
 
 ENV \
-    GNU_INSTALL_ROOT=/usr/local/gcc-arm-none-eabi-7-2018-q2-update/bin/ \
-    GNU_VERSION=7.3.1 \
+    GNU_INSTALL_ROOT=/usr/local/gcc-arm-none-eabi-6-2017-q2-update/bin/ \
+    GNU_VERSION=6.3 \
     GNU_PREFIX=arm-none-eabi
->>>>>>> 2786b299255a5c79218a73f88610d2c2ad278f1c
 
 # https://www.nordicsemi.com/eng/Products/Bluetooth-low-energy/nRF5-SDK
 WORKDIR /nordic/
@@ -37,17 +29,15 @@ RUN wget -qO nRF5-SDK.zip https://www.nordicsemi.com/eng/nordic/download_resourc
   unzip nRF5-SDK.zip && \
   rm nRF5-SDK.zip
 
-<<<<<<< HEAD
 # Include the Nordic Command Line Tools
 # https://www.nordicsemi.com/eng/Products/Bluetooth-low-energy/nRF52832/nRF5x-Command-Line-Tools-Linux64
-RUN wget -qO- https://www.nordicsemi.com/eng/nordic/download_resource/51388/29/43703846/94917 | tar -xf -
-=======
+RUN wget -qO- https://www.nordicsemi.com/eng/nordic/download_resource/51388/29/43703846/94917 | tar -xvf -
+
 # Clone and build micro-ecc
-WORKDIR /usr/share/nRF5-SDK/nRF5_SDK_15.0.0_a53641a/external/micro-ecc
-RUN sed -i -e 's/\r$//' build_all.sh && \
+WORKDIR /nordic/nRF5_SDK_15.0.0_a53641a/external/micro-ecc
+RUN dos2unix build_all.sh && \
   chmod +x build_all.sh && \
   ./build_all.sh
->>>>>>> 2786b299255a5c79218a73f88610d2c2ad278f1c
 
 # https://www.nordicsemi.com/eng/Products/Bluetooth-low-energy/nRF5-SDK-for-HomeKit
 # The nRF5 SDK for HomeKit is available to MFI licensees only
@@ -59,8 +49,6 @@ RUN wget -qO- https://www.segger.com/downloads/jlink/JLink_Linux_V622g_x86_64.tg
 # Setting up the development kit for nRF52832
 # https://infocenter.nordicsemi.com/index.jsp?topic=%2Fcom.nordic.infocenter.nrf52%2Fdita%2Fnrf52%2Fdevelopment%2Fsetting_up_new.html
 # https://gustavovelascoh.wordpress.com/2017/01/23/starting-development-with-nordic-nrf5x-and-gcc-on-linux/
-<<<<<<< HEAD
-COPY Makefile.posix /nordic/nRF5_SDK_15.0.0_a53641a/components/toolchain/gcc/Makefile.posix
 
 # Include python utilities
 RUN pip install nrfutil pc-ble-driver-py
@@ -69,20 +57,5 @@ ENV \
   PATH="/usr/local/gcc-arm-none-eabi-6-2017-q2-update/bin/:/nordic/nrfjprog:/nordic/mergehex:/segger/JLink_Linux_V622g_x86_64:${PATH}" \
   SDK_ROOT="/nordic/nRF5_SDK_15.0.0_a53641a" \
   LD_LIBRARY_PATH="/nordic/nrfjprog:/nordic/mergehex:${LD_LIBRARY_PATH}"
-=======
-ENV \
-  PATH="/usr/local/gcc-arm-none-eabi-7-2018-q2-update/bin/:${PATH}" \
-  SDK_ROOT="/usr/share/nRF5-SDK/nRF5_SDK_15.0.0_a53641a"
-
-# Include nrfutil
-RUN pip install nrfutil
-
-# Include the Nordic Command Line Tools
-# https://www.nordicsemi.com/eng/Products/Bluetooth-low-energy/nRF52832/nRF5x-Command-Line-Tools-Linux64
-WORKDIR /usr/local/nRF5x
-RUN wget -qO- https://www.nordicsemi.com/eng/nordic/download_resource/51388/29/43703846/94917 | tar -xf -
-
-ENV PATH="${PATH}:/usr/local/nRF5x/nrfjprog:/usr/local/nRF5x/mergehex"
->>>>>>> 2786b299255a5c79218a73f88610d2c2ad278f1c
 
 WORKDIR /build
