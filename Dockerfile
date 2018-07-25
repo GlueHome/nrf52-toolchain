@@ -9,6 +9,7 @@ LABEL \
 RUN apt-get update && apt-get install -y \
   unzip \
   vim \
+  emacs \
   python \
   python-pip \
   && apt-get purge
@@ -16,17 +17,22 @@ RUN apt-get update && apt-get install -y \
 WORKDIR /usr/local
 RUN wget -qO- https://developer.arm.com/-/media/Files/downloads/gnu-rm/7-2018q2/gcc-arm-none-eabi-7-2018-q2-update-linux.tar.bz2 | tar -xjf -
 
-# https://www.nordicsemi.com/eng/Products/S132-SoftDevice
-WORKDIR /usr/share/S132-SoftDevice
-RUN wget -qO S132-SoftDevice.zip https://www.nordicsemi.com/eng/nordic/download_resource/67248/3/8320952/141008 && \
-  unzip S132-SoftDevice.zip && \
-  rm S132-SoftDevice.zip
+ENV \
+    GNU_INSTALL_ROOT=/usr/local/gcc-arm-none-eabi-7-2018-q2-update/bin/ \
+    GNU_VERSION=7.3.1 \
+    GNU_PREFIX=arm-none-eabi
 
 # https://www.nordicsemi.com/eng/Products/Bluetooth-low-energy/nRF5-SDK
 WORKDIR /usr/share/nRF5-SDK
 RUN wget -qO nRF5-SDK.zip https://www.nordicsemi.com/eng/nordic/download_resource/59011/71/77279059/116085 && \
   unzip nRF5-SDK.zip && \
   rm nRF5-SDK.zip
+
+# Clone and build micro-ecc
+WORKDIR /usr/share/nRF5-SDK/nRF5_SDK_15.0.0_a53641a/external/micro-ecc
+RUN sed -i -e 's/\r$//' build_all.sh && \
+  chmod +x build_all.sh && \
+  ./build_all.sh
 
 # https://www.nordicsemi.com/eng/Products/Bluetooth-low-energy/nRF5-SDK-for-HomeKit
 # The nRF5 SDK for HomeKit is available to MFI licensees only
@@ -37,11 +43,7 @@ RUN wget -qO nRF5-SDK.zip https://www.nordicsemi.com/eng/nordic/download_resourc
 # https://gustavovelascoh.wordpress.com/2017/01/23/starting-development-with-nordic-nrf5x-and-gcc-on-linux/
 ENV \
   PATH="/usr/local/gcc-arm-none-eabi-7-2018-q2-update/bin/:${PATH}" \
-  SDK_ROOT="/usr/share/nRF5-SDK/nRF5_SDK_15.0.0_a53641a" \
-  S132_ROOT="/usr/share/S132-SoftDevice/" \
-  S132_IMAGE="/usr/share/S132-SoftDevice/s132_nrf52_6.0.0_softdevice.hex"
-
-COPY Makefile.posix /usr/share/nRF5-SDK/nRF5_SDK_15.0.0_a53641a/components/toolchain/gcc/Makefile.posix
+  SDK_ROOT="/usr/share/nRF5-SDK/nRF5_SDK_15.0.0_a53641a"
 
 # Include nrfutil
 RUN pip install nrfutil
